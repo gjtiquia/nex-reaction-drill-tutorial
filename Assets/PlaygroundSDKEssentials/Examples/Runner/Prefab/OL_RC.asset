@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c248e2b0b4264e99bd08067b289482e, type: 3}
+  m_Name: OL_RC
+  m_EditorClassIdentifier: 
+  obstaclePositions:
+  - {x: 2, y: 0, z: 0}
+  - {x: 2, y: 0, z: 5}
+  - {x: 2, y: 0, z: 10}
+  - {x: 2, y: 0, z: 15}
+  obstaclePrefabs:
+  - {fileID: 5741767218012018991, guid: 7c93f12e239a4433f8193e800719e778, type: 3}
+  bombsPositions:
+  - {x: -6, y: 0, z: 15}
+  - {x: 6, y: 0, z: 10}
+  bombsPrefabs:
+  - {fileID: 737366424567022941, guid: bea30588d64b342a188d04fe206bed41, type: 3}
+  nextTileProbabilities:
+  - tileSettings: {fileID: 11400000, guid: d2efe85ec04c84194bf0d450679754aa, type: 2}
+    probability: 0.2

@@ -1,0 +1,370 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+#nullable enable
+
+using System;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+namespace Nex.Essentials
+{
+    [Serializable]
+    public class OneEuroFilterConfig : ISerializationCallbackReceiver
+    {
+        [SerializeField] [Min(0)] private float minCutoff;
+        [SerializeField] [Min(0)] private float beta;
+        [SerializeField] [Min(0)] private float derivativeCutoff;
+
+        public float MinCutoff
+        {
+            get => minCutoff;
+            set
+            {
+                minCutoff = value;
+                Validate();
+            }
+        }
+
+        public float Beta
+        {
+            get => beta;
+            set
+            {
+                beta = value;
+                Validate();
+            }
+        }
+
+        public float DerivativeCutoff
+        {
+            get => derivativeCutoff;
+            set
+            {
+                derivativeCutoff = value;
+                Validate();
+            }
+        }
+
+        public OneEuroFilterConfig(float minCutoff, float beta, float derivativeCutoff)
+        {
+            this.minCutoff = minCutoff;
+            this.beta = beta;
+            this.derivativeCutoff = derivativeCutoff;
+            Validate();
+        }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
+            Validate();
+        }
+
+        public void Validate()
+        {
+            if (minCutoff < 0)
+            {
+                minCutoff = 0;
+            }
+
+            if (beta < 0)
+            {
+                beta = 0;
+            }
+
+            if (derivativeCutoff < 0)
+            {
+                derivativeCutoff = 0;
+            }
+        }
+    }
+
+    public interface IOneEuroFilter<T> where T : struct
+    {
+        public OneEuroFilterConfig Config { get; set; }
+        public float MinCutoff { get; set; }
+        public float Beta { get; set; }
+        public float DerivativeCutoff { get; set; }
+
+        public T? RawValue { get; }
+        public T? FilteredValue { get; }
+        public T? FilteredDerivativeValue { get; }
+
+        public T? Update(T? newRawValue, float deltaTime, float speedNormalizeFactor = 1);
+        public T Update(T newRawValue, float deltaTime, float speedNormalizeFactor = 1);
+
+        public T? Set(T? newRawValue);
+        public T Set(T newRawValue);
+    }
+<#
+    foreach (var type in (OneEuroFilterTypes[])Enum.GetValues(typeof(OneEuroFilterTypes)))
+    {
+        var typeName = type.ToString();
+        var typeValue = type switch
+        {
+            OneEuroFilterTypes.Float => "float",
+            OneEuroFilterTypes.Vector2 => "Vector2",
+            OneEuroFilterTypes.Vector3 => "Vector3",
+            OneEuroFilterTypes.Vector4 => "Vector4",
+            OneEuroFilterTypes.Quaternion => "Quaternion",
+            _ => throw new ArgumentOutOfRangeException()
+            };
+#>
+
+    [Serializable]
+    public class OneEuroFilter<#= typeName #> : IOneEuroFilter<<#= typeValue #>>
+    {
+        #region Config
+
+        [SerializeField] private OneEuroFilterConfig config;
+
+        public OneEuroFilterConfig Config
+        {
+            get => config;
+            set
+            {
+                value.Validate();
+                config = value;
+            }
+        }
+
+        public float MinCutoff
+        {
+            get => config.MinCutoff;
+            set => config.MinCutoff = value;
+        }
+
+        public float Beta
+        {
+            get => config.Beta;
+            set => config.Beta = value;
+        }
+
+        public float DerivativeCutoff
+        {
+            get => config.DerivativeCutoff;
+            set => config.DerivativeCutoff = value;
+        }
+
+        #endregion
+
+        #region Fields / Properties
+
+        [SerializeField] private bool hasValue;
+
+        [SerializeField]
+        private <#= typeValue #> rawValue;
+
+        [SerializeField]
+        private <#= typeValue #> filteredValue;
+
+        [SerializeField]
+        private <#= typeValue #> filteredDerivativeValue;
+
+        public <#= typeValue #>? RawValue => hasValue ? rawValue : null;
+        public <#= typeValue #>? FilteredValue => hasValue ? filteredValue : null;
+        public <#= typeValue #>? FilteredDerivativeValue => hasValue ? filteredDerivativeValue : null;
+
+        #endregion
+
+        #region Constructor
+
+        public OneEuroFilter<#= typeName #>(OneEuroFilterConfig config)
+        {
+            config.Validate();
+            this.config = config;
+            hasValue = false;
+            rawValue = default;
+            filteredValue = default;
+            filteredDerivativeValue = default;
+        }
+
+        #endregion
+
+        #region Update
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= typeValue #>? Update(<#= typeValue #>? newRawValue, float deltaTime, float speedNormalizeFactor = 1)
+        {
+            if ((newRawValue ?? RawValue) is not { } rawValueNotNull)
+            {
+                return null;
+            }
+
+            return Update(rawValueNotNull, deltaTime, speedNormalizeFactor);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= typeValue #> Update(<#= typeValue #> newRawValue, float deltaTime, float speedNormalizeFactor = 1)
+        {
+            if (deltaTime <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(deltaTime), deltaTime, "Delta time must be positive");
+            }
+
+            rawValue = newRawValue;
+
+            var derivativeValue = hasValue ? ComputeDerivative(rawValue, filteredValue, deltaTime, speedNormalizeFactor) : default;
+            var derivativeAlpha = OneEuroFilterUtils.ComputeAlpha(deltaTime, config.DerivativeCutoff);
+            filteredDerivativeValue = hasValue ? Lerp(filteredDerivativeValue, derivativeValue, derivativeAlpha) : default;
+
+            var cutoff = config.MinCutoff + config.Beta * ComputeMagnitude(filteredDerivativeValue, deltaTime, speedNormalizeFactor);
+
+            var alpha = OneEuroFilterUtils.ComputeAlpha(deltaTime, cutoff);
+            filteredValue = hasValue ? Lerp(filteredValue, rawValue, alpha) : rawValue;
+
+            hasValue = true;
+
+            return filteredValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static <#= typeValue #> Lerp(<#= typeValue #> a, <#= typeValue #> b, float t)
+        {
+<#
+        switch (type)
+        {
+            case OneEuroFilterTypes.Float:
+#>
+            return Mathf.Lerp(a, b, t);
+<#
+                break;
+            case OneEuroFilterTypes.Vector2:
+#>
+            return Vector2.Lerp(a, b, t);
+<#
+                break;
+            case OneEuroFilterTypes.Vector3:
+#>
+            return Vector3.Lerp(a, b, t);
+<#
+                break;
+            case OneEuroFilterTypes.Vector4:
+#>
+            return Vector4.Lerp(a, b, t);
+<#
+                break;
+            case OneEuroFilterTypes.Quaternion:
+#>
+            return Quaternion.Slerp(a, b, t);
+<#
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+#>
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static <#= typeValue #> ComputeDerivative(<#= typeValue #> rawValue, <#= typeValue #> filteredValue, float deltaTime, float speedNormalizeFactor)
+        {
+<#
+        switch (type)
+        {
+            case OneEuroFilterTypes.Float:
+            case OneEuroFilterTypes.Vector2:
+            case OneEuroFilterTypes.Vector3:
+            case OneEuroFilterTypes.Vector4:
+#>
+            return (rawValue - filteredValue) / (deltaTime * speedNormalizeFactor);
+<#
+                break;
+            case OneEuroFilterTypes.Quaternion:
+#>
+            // Compute rotation difference: rotation from filteredValue to rawValue
+            var rotationDiff = Quaternion.Inverse(filteredValue) * rawValue;
+            // Normalize to ensure valid quaternion
+            rotationDiff = rotationDiff.normalized;
+            return rotationDiff;
+<#
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+#>
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float ComputeMagnitude(<#= typeValue #> a, float deltaTime, float speedNormalizeFactor)
+        {
+<#
+        switch (type)
+        {
+            case OneEuroFilterTypes.Float:
+#>
+            return Mathf.Abs(a);
+<#
+                break;
+            case OneEuroFilterTypes.Vector2:
+            case OneEuroFilterTypes.Vector3:
+            case OneEuroFilterTypes.Vector4:
+#>
+            return a.magnitude;
+<#
+                break;
+            case OneEuroFilterTypes.Quaternion:
+#>
+            // Compute angular velocity magnitude in radians per second
+            // The quaternion represents a rotation difference, convert to angular velocity
+            var angle = Quaternion.Angle(Quaternion.identity, a);
+            var angularVelocity = (angle * Mathf.Deg2Rad) / (deltaTime * speedNormalizeFactor);
+            return angularVelocity;
+<#
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+#>
+        }
+
+        #endregion
+
+        #region Set
+
+        public <#= typeValue #>? Set(<#= typeValue #>? newRawValue)
+        {
+            hasValue = newRawValue is not null;
+            rawValue = newRawValue ?? default;
+            filteredValue = newRawValue ?? default;
+            filteredDerivativeValue = default;
+            return newRawValue;
+        }
+
+        public <#= typeValue #> Set(<#= typeValue #> newRawValue)
+        {
+            hasValue = true;
+            rawValue = newRawValue;
+            filteredValue = newRawValue;
+            filteredDerivativeValue = default;
+            return newRawValue;
+        }
+
+        #endregion
+    }
+<#
+    }
+#>
+
+    public static class OneEuroFilterUtils
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ComputeAlpha(float deltaTime, float cutoff)
+        {
+            var r = 2 * Mathf.PI * cutoff * deltaTime;
+            return r / (r + 1);
+        }
+    }
+}
+<#+
+    public enum OneEuroFilterTypes
+    {
+    Float,
+    Vector2,
+    Vector3,
+    Vector4,
+    Quaternion
+    }
+#>

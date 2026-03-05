@@ -1,0 +1,59 @@
+{
+    "name": "VersionFixer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:809bd64ec73c24b2cb45395b987d4bb0",
+        "GUID:8a001f6ce9e154599b5ca8a123713996",
+        "GUID:89d5f98eb5b564080aa4ae466c74c4ac",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:7aa12d7dfe5a4a7fbe6e3f8b299dddc8",
+        "GUID:1234567890abcdef1234567890abcdef",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:e50c6810b1d24672ab5c4bfd48d7db00"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "team.nex.mdk.body",
+            "expression": "[1,2)",
+            "define": "MDK_1_X"
+        },
+        {
+            "name": "team.nex.mdk.body",
+            "expression": "2",
+            "define": "MDK_2_UP"
+        },
+        {
+            "name": "team.nex.app-support",
+            "expression": "1.13.1",
+            "define": "GAME_HUB_ENABLED"
+        },
+        {
+            "name": "team.nex.mdk.hand",
+            "expression": "2.7.0",
+            "define": "MDK_HAND_ENABLED"
+        },
+        {
+            "name": "team.nex.min-playos-api-level",
+            "expression": "1.2.0",
+            "define": "MIN_PLAYOS_API_2"
+        },
+        {
+            "name": "team.nex.mdk.face",
+            "expression": "2.7.1",
+            "define": "MDK_FACE_ENABLED"
+        },
+        {
+            "name": "team.nex.mdk.hand",
+            "expression": "3.1.0",
+            "define": "MDK_HAND_3_1_UP"
+        }
+    ],
+    "noEngineReferences": false
+}

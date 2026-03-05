@@ -1,0 +1,97 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<# var typeDefinitions = new List<(string typeName, string mathClassName)> { ("double", "Math"), ("float", "Mathf") }; #>
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Nex.Mdk.Essentials
+{
+    /// <summary>
+    /// This class provides extension methods to deal with statistics.
+    /// </summary>
+    public static class StatisticsExtension
+    {
+<#
+foreach (var def in typeDefinitions)
+{
+    foreach (var isArray in new[] { true, false })
+    {
+        var inputTypeName = isArray ? $"{def.typeName}[]" : $"IEnumerable<{def.typeName}>";
+        var countInitialization = isArray ? "values.Length" : "0";
+#>
+
+        public static <#= def.typeName #> Mean(this <#= inputTypeName #> values)
+        {
+            var n = <#= countInitialization #>;
+            <#= def.typeName #> sum = 0;
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var value in values)
+            {
+                sum += value;
+<#
+            if (!isArray)
+            {
+#>
+                ++n;
+<#
+            }
+#>
+            }
+            return sum / n;
+        }
+
+        public static <#= def.typeName #> StandardDeviation(this <#= inputTypeName #> values)
+        {
+            var n = <#= countInitialization #>;
+            <#= def.typeName #> sumValue = 0;
+            <#= def.typeName #> sumSquareValue = 0;
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var value in values)
+            {
+                sumValue += value;
+                sumSquareValue += value * value;
+<#
+            if (!isArray)
+            {
+#>
+                ++n;
+<#
+            }
+#>
+            }
+            var mean = sumValue / n;
+            return <#= def.mathClassName #>.Sqrt(sumSquareValue / n - mean * mean);
+        }
+
+        public static (<#= def.typeName #> mean, <#= def.typeName #> deviation) MeanAndDeviation(this <#= inputTypeName #> values)
+        {
+            var n = <#= countInitialization #>;
+            <#= def.typeName #> sumValue = 0;
+            <#= def.typeName #> sumSquareValue = 0;
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var value in values)
+            {
+                sumValue += value;
+                sumSquareValue += value * value;
+<#
+            if (!isArray)
+            {
+#>
+                ++n;
+<#
+            }
+#>
+            }
+            var mean = sumValue / n;
+            return (mean, <#= def.mathClassName #>.Sqrt(sumSquareValue / n - mean * mean));
+        }
+<#
+    }
+}
+#>
+    }
+}

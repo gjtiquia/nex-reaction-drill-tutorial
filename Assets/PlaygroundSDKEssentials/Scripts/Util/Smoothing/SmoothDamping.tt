@@ -1,0 +1,118 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+#nullable enable
+
+using UnityEngine;
+
+namespace Nex.Essentials
+{
+<#
+    foreach (var config in numericTypeConfigs)
+    {
+#>
+    public struct SmoothDamped<#=config.className#>
+    {
+        public <#=config.typeName#> CurrentValue { get; private set; }
+        public <#=config.typeName#> TargetValue { get; private set; }
+
+        private <#=config.typeName#> velocity;
+        private readonly float smoothTime;
+
+        public SmoothDamped<#=config.className#>(float smoothTime = 1f)
+        {
+            CurrentValue = default;
+            TargetValue = default;
+            velocity = default;
+            this.smoothTime = smoothTime;
+        }
+
+        public void Reset(<#=config.typeName#> value)
+        {
+            CurrentValue = value;
+            TargetValue = value;
+            velocity = default;
+        }
+
+        public void SetTargetValue(<#=config.typeName#> targetValue)
+        {
+            TargetValue = targetValue;
+        }
+
+        public <#=config.typeName#> Update(float? overrideSmoothTime = null)
+        {
+            return CurrentValue = <#=config.smoothFunctionName#>(
+                CurrentValue,
+                TargetValue,
+                ref velocity,
+                overrideSmoothTime ?? smoothTime,
+                Mathf.Infinity,
+                Time.unscaledTime);
+        }
+    }
+
+<#
+    }
+#>
+    public struct SmoothDampedRect
+    {
+        public Rect CurrentValue { get; private set; }
+        public Rect TargetValue { get; private set; }
+
+        private float minXVelocity;
+        private float maxXVelocity;
+        private float minYVelocity;
+        private float maxYVelocity;
+        private readonly float smoothTime;
+
+        public SmoothDampedRect(float smoothTime)
+        {
+            CurrentValue = Rect.zero;
+            TargetValue = Rect.zero;
+            minXVelocity = maxXVelocity = minYVelocity = maxYVelocity = 0;
+            this.smoothTime = smoothTime;
+        }
+
+        public void Reset(Rect value)
+        {
+            CurrentValue = value;
+            TargetValue = value;
+            minXVelocity = maxXVelocity = minYVelocity = maxYVelocity = 0;
+        }
+
+        public void SetTargetValue(Rect targetValue) {
+            TargetValue = targetValue;
+        }
+
+        public Rect Update(float? overrideSmoothTime = null)
+        {
+            var minX = Mathf.SmoothDamp(
+                CurrentValue.xMin, TargetValue.xMin, ref minXVelocity,
+                overrideSmoothTime ?? smoothTime, Mathf.Infinity, Time.unscaledTime);
+            var maxX = Mathf.SmoothDamp(
+                CurrentValue.xMax, TargetValue.xMax, ref maxXVelocity,
+                overrideSmoothTime ?? smoothTime, Mathf.Infinity, Time.unscaledTime);
+            var minY = Mathf.SmoothDamp(
+                CurrentValue.yMin, TargetValue.yMin, ref minYVelocity,
+                overrideSmoothTime ?? smoothTime, Mathf.Infinity, Time.unscaledTime);
+            var maxY = Mathf.SmoothDamp(
+                CurrentValue.yMax, TargetValue.yMax, ref maxYVelocity,
+                overrideSmoothTime ?? smoothTime, Mathf.Infinity, Time.unscaledTime);
+            return CurrentValue = Rect.MinMaxRect(minX, minY, maxX, maxY);
+        }
+    }
+}
+<#+
+    public readonly struct NumericTypeConfig(string typeName, string className, string smoothFunctionName)
+    {
+        public readonly string typeName = typeName;
+        public readonly string className = className;
+        public readonly string smoothFunctionName = smoothFunctionName;
+    }
+
+    public static readonly NumericTypeConfig[] numericTypeConfigs = [
+        new("float", "Float", "Mathf.SmoothDamp"),
+        new("Vector2", "Vector2", "Vector2.SmoothDamp"),
+        new("Vector3", "Vector3", "Vector3.SmoothDamp"),
+        ];
+#>

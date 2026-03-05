@@ -1,0 +1,16 @@
+{
+    "name": "PlaygroundSDKEssentials.Smoothing",
+    "rootNamespace": "Nex.Essentials",
+    "references": [
+        "GUID:c37ff98a203642febfbf5a0dd3ebfa44"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

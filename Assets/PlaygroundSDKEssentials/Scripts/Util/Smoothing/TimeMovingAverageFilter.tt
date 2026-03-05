@@ -1,0 +1,117 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+#nullable enable
+
+using UnityEngine;
+
+namespace Nex.Essentials
+{
+<#
+    foreach (var config in numericTypeConfigs)
+    {
+#>
+    public struct TimeMovingAverageFilter<#=config.className#>
+    {
+        public <#=config.typeName#> CurrentValue => history.Count > 0 ? sum / history.Count : default;
+
+        private Deque<(<#=config.typeName#> value, float time)> history;
+        private <#=config.typeName#> sum;
+
+        public float SmoothWindow { get; set; }
+
+        private const int minimumHistorySize = 8;
+
+        public TimeMovingAverageFilter<#=config.className#>(float smoothWindow = 1f)
+        {
+            history = new Deque<(<#=config.typeName#> value, float time)>(minimumHistorySize);
+            sum = default;
+            SmoothWindow = smoothWindow;
+        }
+
+        public void Reset()
+        {
+            history.Clear();
+            sum = default;
+        }
+
+        public <#=config.typeName#> Update(<#=config.typeName #> value, float? overrideCurrTime = null)
+        {
+            var currTime = overrideCurrTime ?? Time.unscaledTime;
+            var expiredTime = currTime - SmoothWindow;
+            while (history.TryPeekFront(out var item) && item.time < expiredTime)
+            {
+                sum -= item.value;
+                history.PopFront();
+            }
+            history.PushBack((value, currTime));
+            sum += value;
+            return sum / history.Count;
+        }
+    }
+
+<#
+    }
+#>
+    public struct TimeMovingAverageFilterRect {
+        // This is similar to moving average for min/max x/y values.
+        public Rect CurrentValue {
+            get {
+                if (history.Count == 0) {
+                    return Rect.zero;
+                }
+                var average = sum / history.Count;
+                return Rect.MinMaxRect(average.x, average.y, average.z, average.w);
+            }
+        }
+
+        private Deque<(Vector4 value, float time)> history;
+        private Vector4 sum;
+
+        public float SmoothWindow { get; set; }
+
+        private const int minimumHistorySize = 8;
+
+        public TimeMovingAverageFilterRect(float smoothWindow)
+        {
+            history = new Deque<(Vector4 value, float time)>(minimumHistorySize);
+            sum = default;
+            SmoothWindow = smoothWindow;
+        }
+
+        public void Reset()
+        {
+            history.Clear();
+            sum = default;
+        }
+
+        public Rect Update(Rect rect, float? overrideCurrTime = null)
+        {
+            var value = new Vector4(rect.xMin, rect.yMin, rect.xMax, rect.yMax);
+            var currTime = overrideCurrTime ?? Time.unscaledTime;
+            var expiredTime = currTime - SmoothWindow;
+            while (history.TryPeekFront(out var item) && item.time < expiredTime) {
+                sum -= item.value;
+                history.PopFront();
+            }
+            history.PushBack((value, currTime));
+            sum += value;
+            var average = sum / history.Count;
+            return Rect.MinMaxRect(average.x, average.y, average.z, average.w);
+        }
+    }
+}
+<#+
+    public readonly struct NumericTypeConfig(string typeName, string className)
+    {
+        public readonly string typeName = typeName;
+        public readonly string className = className;
+    }
+
+    public static readonly NumericTypeConfig[] numericTypeConfigs = [
+        new("float", "Float"),
+        new("Vector2", "Vector2"),
+        new("Vector3", "Vector3"),
+        new("Vector4", "Vector4"),
+    ];
+#>
