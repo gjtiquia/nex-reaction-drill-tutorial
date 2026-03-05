@@ -178,6 +178,85 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2121251555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1095835172
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1095835173}
+  - component: {fileID: 1095835174}
+  - component: {fileID: 1095835175}
+  m_Layer: 0
+  m_Name: PlayAreaController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1095835173
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095835172}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2121251555}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1095835174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095835172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77317afe490048c78b45f870f3136a45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mdkController: {fileID: 2121251554}
+  bodyPoseController: {fileID: 768248855}
+  playerPositions:
+  - 0.5
+  minimumScale: 0.15
+  aspectRatio: 1.7777778
+  zoomInSmoothTime: 0.5
+  zoomOutSmoothTime: 1
+  margins:
+    horizontalMarginInInches: 32
+    topMarginInInches: 24
+    bottomMarginInInches: 34
+    marginScope: 1
+  smoothWindow: 1
+  playerPositionSearchConfig:
+    maxSearchScale: 2
+    maxIterations: 8
+    errorToleranceInInches: 0.01
+    lossFunction: 2
+  locked: 0
+--- !u!114 &1095835175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095835172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c76583cb293b44159c52b936e834bd34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mdkController: {fileID: 2121251554}
+  playAreaController: {fileID: 1095835174}
 --- !u!1 &1140216655
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +316,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  provider: {fileID: 1470118740}
+  provider: {fileID: 1095835175}
 --- !u!222 &1140216658
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -450,7 +529,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  previewFrameProvider: {fileID: 1470118740}
+  previewFrameProvider: {fileID: 1095835175}
   bodyPoseController: {fileID: 768248855}
   playerIndex: 0
   poseFlavor: 0
@@ -520,7 +599,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  previewFrameProvider: {fileID: 1470118740}
+  previewFrameProvider: {fileID: 1095835175}
   bodyPoseController: {fileID: 768248855}
   playerIndex: 0
   poseFlavor: 1
@@ -754,6 +833,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2823548714225941465, guid: ce1920ca9b38d4d869de473880ee68e9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 768248856}
+    - targetCorrespondingSourceObject: {fileID: 2823548714225941465, guid: ce1920ca9b38d4d869de473880ee68e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1095835173}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7001719158153133852, guid: ce1920ca9b38d4d869de473880ee68e9, type: 3}
       insertIndex: -1
