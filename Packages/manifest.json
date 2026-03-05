@@ -9,6 +9,9 @@
     "com.unity.timeline": "1.7.7",
     "com.unity.ugui": "1.0.0",
     "com.unity.visualscripting": "1.9.4",
+    "team.nex.mdk.body": "3.1.0",
+    "team.nex.ml-models": "2026.1.29",
+    "team.nex.nex-opencv-for-unity": "3.1.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
@@ -40,5 +43,18 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "Nex Packages",
+      "url": "https://packages.nex.inc",
+      "scopes": [
+        "team.nex",
+        "com.cysharp.unitask",
+        "com.dbrizov.naughtyattributes",
+        "com.textus-games.serialized-reference-ui",
+        "net.tnrd.serializableinterface"
+      ]
+    }
+  ]
 }
